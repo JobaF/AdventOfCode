@@ -1,0 +1,12 @@
+{
+  "type": "module",
+  "name": "day-1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "result_one.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

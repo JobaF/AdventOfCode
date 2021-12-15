@@ -5,9 +5,6 @@ const input = test
   ? fs.readFileSync('./testInput.txt').toString().split('\n')
   : fs.readFileSync('./input.txt').toString().split('\n')
 
-let distances = {}
-let visited = {}
-
 class Graph {
   constructor() {
     this.vertices = []

@@ -20,31 +20,12 @@ const maxY = Math.max.apply(
     return i[1];
   })
 );
-const minY = Math.min.apply(
-  Math,
-  hashPositions.map(function (i) {
-    return i[1];
-  })
-);
+
 const maxX = Math.max.apply(
   Math,
   hashPositions.map(function (i) {
     return i[0];
   })
-);
-const minX = Math.min.apply(
-  Math,
-  hashPositions.map(function (i) {
-    return i[0];
-  })
-);
-
-console.log(
-  "_________\nMin X: %s\nMax X: %s\nMin Y: %s\nMax Y: %s\n_________\n",
-  minX,
-  maxX,
-  minY,
-  maxY
 );
 
 const rowsLength = maxY + 3;

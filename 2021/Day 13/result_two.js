@@ -1,68 +1,108 @@
 import fs from "fs";
-const input = fs.readFileSync("input.txt").toString();
+const test = false;
+const input = test
+  ? fs.readFileSync("testInput.txt").toString()
+  : fs.readFileSync("input.txt").toString();
 
-const [dots, folds] = input.split("\n\n");
-const dotsArray = dots
+let hashPositions = input
+  .split("\n\n")[0]
   .split("\n")
-  .map((coord) => coord.split(",").map((string) => +string));
-const foldsArray = folds.split("\n").map((row) => row.split(" ")[2].split("="));
+  .map((value) => value.split(",").map(Number));
+let foldInstructions = input
+  .split("\n\n")[1]
+  .split("\n")
+  .map((value) => value.split(" ")[2])
+  .map((s) => s.split("="));
 
-const xMax = Math.max(...dotsArray.map((coord) => coord[0]));
-// I need one more row for the folding to work
-const yMax = Math.max(...dotsArray.map((coord) => coord[1])) + 1;
-console.log(xMax, yMax);
+const maxY = Math.max.apply(
+  Math,
+  hashPositions.map(function (i) {
+    return i[1];
+  })
+);
+const minY = Math.min.apply(
+  Math,
+  hashPositions.map(function (i) {
+    return i[1];
+  })
+);
+const maxX = Math.max.apply(
+  Math,
+  hashPositions.map(function (i) {
+    return i[0];
+  })
+);
+const minX = Math.min.apply(
+  Math,
+  hashPositions.map(function (i) {
+    return i[0];
+  })
+);
 
-const dotsMatrix = [];
-for (let i = 0; i <= yMax; i++) {
-  dotsMatrix.push(new Array(xMax + 1).fill(null));
+console.log(
+  "_________\nMin X: %s\nMax X: %s\nMin Y: %s\nMax Y: %s\n_________\n",
+  minX,
+  maxX,
+  minY,
+  maxY
+);
+
+const rowsLength = maxY + 3;
+const columnsLength = maxX + 1;
+
+//fill array
+let hashes = Array.from({ length: rowsLength }, () =>
+  Array.from({ length: columnsLength }, () => " ")
+);
+
+function fillInHashes() {
+  for (let i = 0; i < hashPositions.length; i++) {
+    const x = hashPositions[i][0];
+    const y = hashPositions[i][1];
+    hashes[y][x] = "#";
+  }
 }
 
-dotsArray.forEach(([x, y]) => {
-  dotsMatrix[y][x] = "#";
-});
+function foldHashes(direction, coordinate) {
+  let resulting = Array.from({ length: hashes.length }, () =>
+    Array.from({ length: hashes[0].length }, () => " ")
+  );
+  if (direction == "x") {
+    const xLength = coordinate;
+    const yLength = resulting.length;
 
-function fold(matrix, instruction) {
-  function foldX() {
-    const xLength = matrix[0].length;
-    for (let y = 0; y < matrix.length; y++) {
-      for (let x = 0; x < instruction[1]; x++) {
-        matrix[y][x] = matrix[y][x] || matrix[y][xLength - 1 - x];
+    for (let i = 0; i < yLength; i++) {
+      for (let j = 0; j < xLength; j++) {
+        if (
+          hashes[i][j] === "#" ||
+          hashes[i][resulting[i].length - j - 1] === "#"
+        ) {
+          resulting[i][j] = "#";
+        } else resulting[i][j] = " ";
+      }
+      resulting[i].length = xLength;
+    }
+  } else if (direction == "y") {
+    const yLength = coordinate;
+    const xLength = resulting[0].length;
+
+    for (let i = 0; i < yLength; i++) {
+      for (let j = 0; j < xLength; j++) {
+        if (
+          hashes[i][j] === "#" ||
+          hashes[resulting.length - i - 1][j] === "#"
+        ) {
+          resulting[i][j] = "#";
+        } else resulting[i][j] = " ";
       }
     }
-    for (const row of matrix) {
-      row.length = instruction[1];
-    }
+    resulting.length = yLength;
   }
-  function foldY() {
-    for (let y = 0; y < instruction[1]; y++) {
-      for (let x = 0; x < matrix[0].length; x++) {
-        matrix[y][x] = matrix[y][x] || matrix[matrix.length - 1 - y][x];
-      }
-    }
-    matrix.length = instruction[1];
-  }
-  if (instruction[0] === "x") {
-    foldX();
-  } else {
-    foldY();
-  }
-  return matrix;
+
+  hashes = resulting;
 }
 
-// Part 1
-fold(dotsMatrix, foldsArray[0]);
-const result_1 = dotsMatrix.reduce(
-  (accu, row) => accu + row.filter((item) => item === "#").length,
-  0
-);
-console.log("Result part 1:", result_1);
+fillInHashes();
 
-// Part 2
-for (let i = 1; i < foldsArray.length; i++) {
-  fold(dotsMatrix, foldsArray[i]);
-}
-const dotsPointsMatrix = dotsMatrix.map((row) =>
-  row.map((item) => item || " ")
-);
-const bigString = dotsPointsMatrix.map((array) => array.join(" ")).join("\n");
-console.log(bigString);
+foldInstructions.forEach(([a, b]) => foldHashes(a, b));
+console.log(hashes.map((s) => s.join("")).join("\n"));

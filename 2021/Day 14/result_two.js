@@ -1,5 +1,5 @@
 import fs from "fs";
-const test = true;
+const test = false;
 const input = test
   ? fs.readFileSync("testInput.txt").toString()
   : fs.readFileSync("input.txt").toString();
@@ -72,33 +72,47 @@ function getMostCommonElement() {
 }
 
 function getAmountOfElements() {
-  let localCount = {};
+  let localCountLeft = {};
+  let localCountRight = {};
+  let localCountResult = {};
   for (const [key, value] of Object.entries(pairCounts)) {
-    localCount[key.substring(0, 1)] = 0;
+    localCountLeft[key.substring(0, 1)] = 0;
+    localCountRight[key.substring(0, 1)] = 0;
+    localCountResult[key.substring(0, 1)] = 0;
   }
   for (const [key, value] of Object.entries(pairCounts)) {
     for (let i in instructions) {
       if (instructions[i][0] == key) {
-        localCount[key.substring(0, 1)] += value;
-        localCount[key.substring(1, 2)] += value;
-        localCount[instructions[i][1]] += value;
+        const leftChar = key.substring(0, 1);
+        const rightChar = key.substring(1, 2);
+        localCountLeft[leftChar] += value;
+        localCountRight[rightChar] += value;
       }
     }
   }
-  console.log(localCount);
+  for (const [key, value] of Object.entries(localCountLeft)) {
+    // Take the smaller or equal value
+    let baseValue =
+      localCountLeft[key] >= localCountRight[key]
+        ? localCountRight[key]
+        : localCountLeft[key];
+    let difference = Math.abs(localCountRight[key] - localCountLeft[key]);
+    localCountResult[key] += baseValue + difference;
+  }
+
+  //Get most and least element
+  const highestValue = Object.entries(localCountResult).reduce((a, b) =>
+    a[1] > b[1] ? a : b
+  )[1];
+  const lowestValue = Object.entries(localCountResult).reduce((a, b) =>
+    a[1] < b[1] ? a : b
+  )[1];
+
+  console.log("Result: %s", highestValue - lowestValue);
 }
 
 initializePolymerPairs();
 initializePairs();
 initializeInstructions();
-goXSteps(8);
+goXSteps(40);
 getAmountOfElements();
-
-// const countOfValues = getMostCommonElement();
-// const highestAmount = Object.entries(countOfValues).reduce((a, b) =>
-//   a[1] > b[1] ? a : b
-// )[1];
-// const lowestAmount = Object.entries(countOfValues).reduce((a, b) =>
-//   a[1] < b[1] ? a : b
-// )[1];
-// console.log(highestAmount - lowestAmount);
